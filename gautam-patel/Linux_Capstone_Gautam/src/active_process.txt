@@ -1,1 +1,0 @@
-gautamp+    5067  0.0  0.0  18148  2508 pts/0    S+   10:40   0:00 grep --color=auto -e bash|terminal
