@@ -14,6 +14,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }))
 
 /*HEALTH CHECK */
 app.get("/health", (req, res) => {
