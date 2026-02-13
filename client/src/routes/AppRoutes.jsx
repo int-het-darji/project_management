@@ -6,7 +6,7 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route element={<MainLayout />}>
-        {/* <Route path="/" element={<Sidebar />} /> */}
+        <Route path="/" element={<Sidebar />} />
         {/* <Route path="/" element={<Sidebar />} /> */}
       </Route>
     </Routes>
