@@ -1,0 +1,26 @@
+mkdir Linux_Capstone_Gautam
+ls
+cd Linux_Capstone_Gautam
+mkdir -p src/scripts config logs backup
+ls
+cd logs
+touch system_info.txt
+date >> system_info.txt
+free -h >> system_info.txt
+df -h >> system_info.txt
+cat system_info.txt
+cd..
+cd config
+touch database.cfg
+chmod 640 database.cfg
+touch secret-key.pem
+ls -l
+cd..
+ps aux
+ps aux | grep "bash|terminal" > src/active_process.txt
+ls
+cd src
+ls
+cat active_process.txt
+cd..
+git init

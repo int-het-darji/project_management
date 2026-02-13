@@ -1,0 +1,14 @@
+               total        used        free      shared  buff/cache   available
+Mem:            14Gi       2.5Gi        11Gi       703Mi       2.0Gi        12Gi
+Swap:          4.0Gi          0B       4.0Gi
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           3.0G  2.4M  3.0G   1% /run
+/dev/nvme0n1p2  468G   16G  428G   4% /
+tmpfs           7.5G   25M  7.4G   1% /dev/shm
+efivarfs        438K  184K  250K  43% /sys/firmware/efi/efivars
+tmpfs           1.0M     0  1.0M   0% /run/credentials/systemd-journald.service
+tmpfs           5.0M  8.0K  5.0M   1% /run/lock
+tmpfs           1.0M     0  1.0M   0% /run/credentials/systemd-resolved.service
+tmpfs           7.5G  5.6M  7.4G   1% /tmp
+/dev/nvme0n1p1  1.1G  6.3M  1.1G   1% /boot/efi
+tmpfs           1.5G  104K  1.5G   1% /run/user/1001
