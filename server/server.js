@@ -15,7 +15,7 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
-
+app.use('/api/auth', require('./routes/authRoutes'));
 /*HEALTH CHECK */
 app.get("/health", (req, res) => {
   res.json({
@@ -25,7 +25,7 @@ app.get("/health", (req, res) => {
 });
 
 /*  ROUTES */
-app.use("/api", require("./routes/test.route"));
+
 
 /* SERVER */
 const PORT = process.env.PORT || 5000;
