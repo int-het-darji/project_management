@@ -1,16 +1,26 @@
 import { Routes, Route } from "react-router-dom";
+import Login from "../pages/login";
+import Dashboard from "../pages/dashboard";
+import ProtectedRoute from "./ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
-import Sidebar from "../components/sidebar/Sidebar";
-import Project from "../pages/project";
-
+import AuthLayout from "../layouts/AuthLayout";
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route element={<MainLayout />}>
-        {/* <Route path="/" element={<Sidebar />} /> */}
-        {/* <Route path="/" element={<Sidebar />} /> */}
-        <Route path="/users" element={<Project />} />
-        <Route path="/projects" element={<Project />} />
+      {/* Public Route */}
+     <Route element={<AuthLayout />}>
+<Route path="/login" element={<Login />} />
+</Route>
+
+      {/* Protected Admin Routes */}
+      <Route
+        element={
+          <ProtectedRoute>
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/dashboard" element={<Dashboard />} />
       </Route>
     </Routes>
   );
