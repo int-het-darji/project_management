@@ -1,15 +1,14 @@
 const { Pool } = require("pg");
 
 const pool = new Pool({
-  host: process.env.DB_HOST, // db.xxxx.supabase.co
-  port: 5432,
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  host: process.env.POSTGRES_HOST,
+  port: Number(process.env.POSTGRES_PORT),
+  user: process.env.POSTGRES_USER,
+  database: process.env.POSTGRES_DATABASE,
+  password: process.env.POSTGRES_PASSWORD,
   ssl: {
     rejectUnauthorized: false,
   },
-  family: 4, // 👈 FORCE IPv4 (IMPORTANT)
 });
 
 module.exports = pool;
