@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import api from "../api/axios";
 import UserForm from "../components/UserForm";
 import UserTable from "../components/UserTable";
@@ -14,7 +15,7 @@ const Users = () => {
       const { data } = await api.get("/users");
       setUsers(data);
     } catch (err) {
-      alert(err.response?.data?.message || "Error fetching users");
+      toast.error(err.response?.data?.message || "Error fetching users");
     }
   };
 

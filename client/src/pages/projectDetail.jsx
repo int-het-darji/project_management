@@ -167,7 +167,6 @@ export default function ProjectDetail() {
       />
 
       <Activity />
-      <UserTable />
     </div>
   );
 }

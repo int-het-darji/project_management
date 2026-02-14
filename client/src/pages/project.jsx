@@ -2,6 +2,7 @@ import { FiTrash2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import Modal from "../components/Modal";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function Project() {
     
@@ -188,7 +189,9 @@ const handleSubmit = (e) => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  alert("delete clicked");
+                  toast.error("Delete clicked (not implemented)");
+                  // alert("delete clicked");
+                  // Replace with actual delete logic and error handling
                 }}
                 className="absolute top-4 right-4 text-gray-400 hover:text-red-500"
               >
