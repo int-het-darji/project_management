@@ -11,6 +11,7 @@ const Progress = () => {
 
   useEffect(() => {
     api.get("/admin/progress").then((res) => {
+      console.log("PROGRESS API 👉", res.data);
       setData(res.data);
     });
   }, []);
@@ -24,7 +25,7 @@ const Progress = () => {
   }
 
   return (
-    <div className="h-full flex flex-col gap-6 overflow-hidden bg-[#F6F8FB]">
+    <div className="h-full flex flex-col gap-6 bg-[#F6F8FB] overflow-hidden">
       {/* HEADER */}
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">
@@ -35,16 +36,16 @@ const Progress = () => {
         </p>
       </div>
 
-      {/* KPI ROW */}
+      {/* KPI */}
       <ProgressKPI projects={data.projects} />
 
-      {/* CHART + USER TABLE */}
+      {/* CHART + USERS */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <ActivityStatusChart data={data.activityStatus} />
         <UserProgressTable users={data.users} />
       </div>
 
-      {/* PROJECT TABLE (SCROLLS INTERNALLY) */}
+      {/* PROJECT TABLE */}
       <ProjectProgressTable projects={data.projects} />
     </div>
   );

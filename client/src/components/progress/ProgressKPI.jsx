@@ -1,13 +1,22 @@
-const ProgressKPI = ({ projects }) => {
+const ProgressKPI = ({ projects = [] }) => {
   const total = projects.length;
-  const completed = projects.filter(p => p.progress === 100).length;
-  const onTrack = projects.filter(p => p.progress >= 60).length;
+
+  const completed = projects.filter(
+    (p) => (p.progress || 0) === 100
+  ).length;
+
+  const onTrack = projects.filter(
+    (p) => (p.progress || 0) >= 60
+  ).length;
 
   const avgProgress =
     total === 0
       ? 0
       : Math.round(
-          projects.reduce((acc, p) => acc + (p.progress || 0), 0) / total
+          projects.reduce(
+            (acc, p) => acc + (p.progress || 0),
+            0
+          ) / total
         );
 
   const cards = [
@@ -24,7 +33,9 @@ const ProgressKPI = ({ projects }) => {
           key={c.label}
           className="bg-white p-4 rounded-xl shadow-sm border"
         >
-          <p className="text-xs text-gray-500">{c.label}</p>
+          <p className="text-xs text-gray-500">
+            {c.label}
+          </p>
           <p className="text-2xl font-semibold text-gray-900 mt-1">
             {c.value}
           </p>
