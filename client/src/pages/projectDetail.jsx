@@ -8,9 +8,11 @@ import {
   FiFileText,
 } from "react-icons/fi";
 import UserTable from "../components/UserTable";
+import Activity from "./Activity";
 
 export default function ProjectDetail() {
   const { id } = useParams();
+  // const [status, setStatus] = useState(project.status);
 
   const project = {
     id,
@@ -119,10 +121,10 @@ export default function ProjectDetail() {
                 <span className="font-medium">{project.createdBy}</span>
               </div>
 
-              <div className="flex items-center justify-between">
+              {/* <div className="flex items-center justify-between">
                 <span className="text-gray-400 text-sm">Assigned To</span>
                 <span className="font-medium">{project.assignedTo}</span>
-              </div>
+              </div> */}
 
             </div>
           </div>
@@ -164,6 +166,8 @@ export default function ProjectDetail() {
         // fetchUsers={fetchProjectDetails}
       />
 
+      <Activity />
+      <UserTable />
     </div>
   );
 }

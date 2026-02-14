@@ -6,14 +6,13 @@ export default function MainLayout() {
 
   // simulate login user
   const user = { role: "admin" };
-
   const links = user.role === "admin" ? adminMenu : userMenu;
 
   return (
-    <div className="flex">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar links={links} />
 
-      <main className="flex-1 bg-gray-50 min-h-screen p-6">
+      <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
         <Outlet />
       </main>
     </div>

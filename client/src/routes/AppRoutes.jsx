@@ -7,6 +7,8 @@ import AuthLayout from "../layouts/AuthLayout";
 import Users from "../pages/Users";
 import Project from "../pages/project";
 import ProjectDetail from "../pages/projectDetail";
+import ActivityDetail from "../pages/ActivityDetail";
+import Profile from "../pages/Profile";
 
 export default function AppRoutes() {
   return (
@@ -19,17 +21,35 @@ export default function AppRoutes() {
       {/* Protected Admin Routes */}
       <Route
         element={
-          <ProtectedRoute>
+          <ProtectedRoute role="admin">
             <MainLayout />
           </ProtectedRoute>
         }
       >
         <Route path="/dashboard" element={<Dashboard />} />
-         <Route path="/users" element={<Users />} />
-          <Route path="/projects" element={<Project/>} />
-          <Route path="/projects/:id" element={<ProjectDetail />} />
-
+         <Route path="/admin/users" element={<Users />} />
+          <Route path="/admin/projects" element={<Project/>} />
+          <Route path="/admin/projects/:id" element={<ProjectDetail />} />
+          <Route path="admin/projects/activity/:id" element={<ActivityDetail />} />
       </Route>
+
+
+      {/* for User*/}
+
+      <Route
+  element={
+    <ProtectedRoute role="user">
+      <MainLayout />
+    </ProtectedRoute>
+  }
+>
+  {/* <Route path="/user/profile" element={<UserDashboard />} /> */}
+  <Route path="/user/my-projects" element={<Project />} />
+  <Route path="/user/projects/:id" element={<ProjectDetail />} />
+  <Route path="/user/profile" element={<Profile />} />
+  <Route path="user/projects/activity/:id" element={<ActivityDetail />} />
+</Route>
+
     </Routes>
   );
 }

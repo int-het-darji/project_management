@@ -12,6 +12,8 @@ export default function Project() {
         desc: "",
     });
 
+    let role = "admin"
+
     const handleChange = (e) => {
   const { name, value } = e.target;
   setFormData((prev) => ({
@@ -19,6 +21,7 @@ export default function Project() {
     [name]: value,
   }));
 };
+
 
 const handleSubmit = (e) => {
   e.preventDefault();
@@ -178,7 +181,7 @@ const handleSubmit = (e) => {
             <div
               key={project.id}
               className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition cursor-pointer relative"
-              onClick={() => navigate(`/projects/${project.id}`)}
+              onClick={() => navigate(`/${role}/projects/${project.id}`)}
             >
 
               {/* DELETE BUTTON */}
