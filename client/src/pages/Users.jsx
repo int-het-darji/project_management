@@ -19,7 +19,7 @@ const Users = () => {
   }, []);
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen space-y-6">
+    <div className="p-6 space-y-6">
       
       <div className="flex justify-end items-center">
 
