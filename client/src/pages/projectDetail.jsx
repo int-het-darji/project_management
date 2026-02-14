@@ -1,123 +1,3 @@
-// import { useParams } from "react-router-dom";
-
-// export default function ProjectDetail() {
-//   const { id } = useParams();
-
-//   // temporary dummy data (later from API)
-//   const project = {
-//     id,
-//     title: "Ecommerce Website",
-//     desc: "Online store with cart and payment integration including admin dashboard and order tracking.",
-//     createdBy: "Admin",
-//     assignedTo: "John Doe",
-//     status: "In Progress",
-//     startDate: "2026-02-01",
-//     endDate: "2026-03-01",
-//     createdAt: "2026-01-28",
-//     updatedAt: "2026-02-10",
-//   };
-
-//   return (
-//     <div className="max-w-6xl mx-auto">
-
-//       {/* HEADER */}
-//       <div className="mb-8">
-//         <h1 className="text-2xl font-semibold text-gray-800">
-//           {project.title}
-//         </h1>
-//         <p className="text-gray-500 text-sm">
-//           Project overview and details
-//         </p>
-//       </div>
-
-//       <div className="grid grid-cols-3 gap-8">
-
-//         {/* LEFT SIDE */}
-//         <div className="col-span-2 space-y-6">
-
-//           {/* Description */}
-//           <div className="bg-white rounded-2xl border p-6">
-//             <h2 className="text-lg font-semibold mb-3">Description</h2>
-//             <p className="text-gray-600 leading-relaxed">
-//               {project.desc}
-//             </p>
-//           </div>
-
-//           {/* Timeline */}
-//           <div className="bg-white rounded-2xl border p-6">
-//             <h2 className="text-lg font-semibold mb-4">Timeline</h2>
-
-//             <div className="grid grid-cols-2 gap-6 text-sm">
-//               <div>
-//                 <p className="text-gray-400">Start Date</p>
-//                 <p className="font-medium">{project.startDate}</p>
-//               </div>
-
-//               <div>
-//                 <p className="text-gray-400">End Date</p>
-//                 <p className="font-medium">{project.endDate}</p>
-//               </div>
-//             </div>
-//           </div>
-
-//         </div>
-
-//         {/* RIGHT SIDE PANEL */}
-//         <div className="space-y-6">
-
-//           {/* Status */}
-//           <div className="bg-white rounded-2xl border p-6">
-//             <h2 className="text-lg font-semibold mb-4">Status</h2>
-
-//             <span className="px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-600 font-medium">
-//               {project.status}
-//             </span>
-//           </div>
-
-//           {/* People */}
-//           <div className="bg-white rounded-2xl border p-6 space-y-4">
-//             <h2 className="text-lg font-semibold">People</h2>
-
-//             <div>
-//               <p className="text-gray-400 text-sm">Created By</p>
-//               <p className="font-medium">{project.createdBy}</p>
-//             </div>
-
-//             <div>
-//               <p className="text-gray-400 text-sm">Assigned To</p>
-//               <p className="font-medium">{project.assignedTo}</p>
-//             </div>
-//           </div>
-
-//           {/* Meta Info */}
-//           <div className="bg-white rounded-2xl border p-6 space-y-3 text-sm">
-//             <h2 className="text-lg font-semibold">Details</h2>
-
-//             <div className="flex justify-between">
-//               <span className="text-gray-400">Created At</span>
-//               <span>{project.createdAt}</span>
-//             </div>
-
-//             <div className="flex justify-between">
-//               <span className="text-gray-400">Updated At</span>
-//               <span>{project.updatedAt}</span>
-//             </div>
-
-//             <div className="flex justify-between">
-//               <span className="text-gray-400">Project ID</span>
-//               <span>#{project.id}</span>
-//             </div>
-//           </div>
-
-//         </div>
-//       </div>
-
-//     </div>
-//   );
-// }
-
-
-
 import { useParams } from "react-router-dom";
 import {
   FiCalendar,
@@ -127,10 +7,12 @@ import {
   FiHash,
   FiFileText,
 } from "react-icons/fi";
-import Users from "./Users";
+import UserTable from "../components/UserTable";
+import Activity from "./Activity";
 
 export default function ProjectDetail() {
   const { id } = useParams();
+  // const [status, setStatus] = useState(project.status);
 
   const project = {
     id,
@@ -239,10 +121,10 @@ export default function ProjectDetail() {
                 <span className="font-medium">{project.createdBy}</span>
               </div>
 
-              <div className="flex items-center justify-between">
+              {/* <div className="flex items-center justify-between">
                 <span className="text-gray-400 text-sm">Assigned To</span>
                 <span className="font-medium">{project.assignedTo}</span>
-              </div>
+              </div> */}
 
             </div>
           </div>
@@ -277,8 +159,8 @@ export default function ProjectDetail() {
         </div>
       </div>
 
-      <Users />
-
+      <Activity />
+      <UserTable />
     </div>
   );
 }
