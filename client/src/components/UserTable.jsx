@@ -1,29 +1,89 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import toast from "react-hot-toast";
 import { FaTrash, FaSearch, FaUsers, FaEllipsisV, FaKey } from "react-icons/fa";
 import Modal from "./Modal";
 import { userValidation } from "../utils/userValidation";
 import api from "../api/axios";
+import debounce from "lodash/debounce";
 
 const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers }) => {
   const [search, setSearch] = useState("");
-  const [filteredUsers, setFilteredUsers] = useState(users);
+  const [displayedUsers, setDisplayedUsers] = useState(users);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [resetUser, setResetUser] = useState(null);
   const [newPassword, setNewPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const debouncedSearch = useCallback(
+    debounce(async (searchTerm) => {
+      if (mode === "users") {
+        await searchUsers(searchTerm);
+      } else if (mode === "project" && projectId) {
+        await searchProjectUsers(searchTerm);
+      }
+    }, 500),
+    [mode, projectId]
+  );
+
+  // Search users in users mode
+   const searchUsers = async (searchTerm) => {
+    if (!searchTerm.trim()) {
+      // If search is empty, fetch all users
+      if (fetchUsers) {
+        await fetchUsers();
+      }
+      return;
+    }
+
+    try {
+      setSearchLoading(true);
+      const { data } = await api.get(`/users?search=${encodeURIComponent(searchTerm)}`);
+      setDisplayedUsers(data);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Error searching users");
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  // Search users in project mode
+  const searchProjectUsers = async (searchTerm) => {
+    if (!projectId) return;
+
+    try {
+      setSearchLoading(true);
+      const { data } = await api.get(`/projects/${projectId}?search=${encodeURIComponent(searchTerm)}`);
+      setDisplayedUsers(data.assigned_users || []);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Error searching users");
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearch(value);
+    
+    if (mode === "users" || (mode === "project" && projectId)) {
+      debouncedSearch(value);
+    }
+  };
+
+  // Update displayed users when parent users prop changes
   useEffect(() => {
-    setFilteredUsers(users);
+    setDisplayedUsers(users);
   }, [users]);
 
-
-    const displayedUsers = filteredUsers.filter(
-    (u) =>
-      u.username?.toLowerCase().includes(search.toLowerCase()) ||
-      (u.name || "").toLowerCase().includes(search.toLowerCase()) ||
-      u.email?.toLowerCase().includes(search.toLowerCase())
-  );
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
 
   // Frontend delete
   const handleDelete = async (id) => {
@@ -36,35 +96,43 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
       if (fetchUsers) {
         await fetchUsers();
       }
+      if (search) {
+        setSearch("");
+      }
       setOpenMenuId(null);
-    } catch (err) {
-      alert(err.response?.data?.message || "Error deleting user");
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Error deleting user");
     } finally {
       setLoading(false);
     }
   };
 
   // Frontend assign toggle
-  const handleAssignToggle = async (id) => {
+  const handleAssignToggle = async (userId) => {
     try {
       setLoading(true);
-      // You'll need to create this endpoint if you want to persist assignments
-      // await api.patch(`/users/${id}/assign`, { projectId, assigned: !users.find(u => u.id === id).is_assigned });
       
-      // Optimistic update
-      setFilteredUsers((prev) =>
-        prev.map((u) =>
-          u.id === id ? { ...u, is_assigned: !u.is_assigned } : u
-        )
-      );
-
-      console.log("Assign toggle:", id, "Project:", projectId);
-    } catch (err) {
-      alert(err.response?.data?.message || "Error updating assignment");
-      // Revert optimistic update on error
+      const user = displayedUsers.find(u => u.id === userId);
+      const currentlyAssigned = user?.is_assigned;
+      
+      if (currentlyAssigned) {
+        await api.delete(`/projects/${projectId}/assign/${userId}`);
+        toast.success("User unassigned successfully");
+      } else {
+        await api.post(`/projects/${projectId}/assign/${userId}`);
+        toast.success("User assigned successfully");
+      }
+      
+      // Refresh with current search term
       if (fetchUsers) {
         await fetchUsers();
+        if (search) {
+          debouncedSearch(search);
+        }
       }
+      
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Error updating assignment");
     } finally {
       setLoading(false);
     }
@@ -98,8 +166,8 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
       setResetUser(null);
       setNewPassword("");
       setPasswordError("");
-    } catch (err) {
-      alert(err.response?.data?.message || "Error resetting password");
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Error resetting password");
     } finally {
       setLoading(false);
     }
@@ -140,10 +208,15 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                         type="text"
                         placeholder="Search users..."
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={handleSearchChange}
                         className="w-full border rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                        disabled={loading}
+                        disabled={loading || searchLoading}
                     />
+                    {searchLoading && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -163,7 +236,7 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                     </thead>
 
                     <tbody>
-                        {loading && (
+                        {(loading || searchLoading) && (
                             <tr>
                                 <td
                                     colSpan={mode === "users" ? 6 : 5}
@@ -173,17 +246,17 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                                 </td>
                             </tr>
                         )}
-                        {!loading && displayedUsers.length === 0 && (
+                        {!loading && !searchLoading && displayedUsers.length === 0 && (
                             <tr>
                                 <td
                                     colSpan={mode === "users" ? 6 : 5}
                                     className="text-center py-8 text-gray-400"
                                 >
-                                    No users found
+                                    {search ? "No users match your search" : "No users found"}
                                 </td>
                             </tr>
                         )} 
-                            {!loading && displayedUsers.map((user) => (
+                            {!loading && !searchLoading && displayedUsers.map((user) => (
                                 <tr
                                     key={user.id}
                                     className="group border-b hover:bg-gray-50 transition"
@@ -230,7 +303,7 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                                                         )
                                                     }
                                                     className="text-gray-500 hover:text-gray-700"
-                                                    disabled={loading}
+                                                    disabled={loading || searchLoading}
                                                 >
                                                     <FaEllipsisV />
                                                 </button>
@@ -240,7 +313,7 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                                                         <button
                                                             onClick={() => handleDelete(user.id)}
                                                             className="flex items-center gap-2 w-full px-4 py-2 text-sm hover:bg-gray-100 text-red-600"
-                                                            disabled={loading}
+                                                            disabled={loading || searchLoading}
                                                         >
                                                             <FaTrash size={12} /> Delete
                                                         </button>
@@ -251,7 +324,7 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                                                                 setOpenMenuId(null);
                                                             }}
                                                             className="flex items-center gap-2 w-full px-4 py-2 text-sm hover:bg-gray-100 text-blue-600"
-                                                            disabled={loading}
+                                                            disabled={loading || searchLoading}
                                                         >
                                                             <FaKey size={12} /> Reset Password
                                                         </button>
@@ -269,7 +342,7 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                                                         : "bg-green-100 text-green-600 hover:bg-green-200"
                                                     }
                                                 `}
-                                                disabled={loading}
+                                                disabled={loading || searchLoading}
                                                 >
                                                 {user.is_assigned ? "Unassign" : "Assign"}
                                             </button>
@@ -283,6 +356,19 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
 
             <div className="flex justify-between items-center text-sm text-gray-500">
                 <span>Total Users: {displayedUsers.length}</span>
+                {search && (
+                    <button
+                        onClick={() => {
+                            setSearch("");
+                            if (fetchUsers) {
+                                fetchUsers();
+                            }
+                        }}
+                        className="text-blue-600 hover:text-blue-700 text-xs"
+                    >
+                        Clear search
+                    </button>
+                )}
             </div>
 
             <Modal isOpen={!!resetUser} onClose={() => setResetUser(null)}>

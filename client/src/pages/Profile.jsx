@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import Modal from "../components/Modal";
 import {
   FiUser,
@@ -8,18 +9,12 @@ import {
   FiEdit2,
   FiLock,
 } from "react-icons/fi";
+import api from "../api/axios";
 
 export default function Profile() {
-  // fake user data (replace later with API)
-  const user = {
-    name: "Het Darji",
-    email: "het@example.com",
-    role: "User",
-    joinedAt: "2026-01-12",
-  };
-
-  /* ---------------- PASSWORD MODAL STATE ---------------- */
-
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [openPasswordModal, setOpenPasswordModal] = useState(false);
 
   const [passwords, setPasswords] = useState({
@@ -28,64 +23,144 @@ export default function Profile() {
     confirm: "",
   });
 
-  const [error, setError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
-  /* ---------------- HANDLERS ---------------- */
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setPasswords((prev) => ({ ...prev, [name]: value }));
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      // Get current user from token
+      const token = localStorage.getItem("token");
+      const decoded = JSON.parse(atob(token.split('.')[1])); // Decode JWT to get user id
+      
+      const response = await api.get(`/users/${decoded.id}`);
+      setUser(response.data);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching user:", err);
+      setError(err.response?.data?.message || "Failed to load user data");
+      toast.error(err.response?.data?.message || "Failed to load user data");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    fetchUserData();
+  }, []);
 
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswords((prev) => ({ ...prev, [name]: value }));
+    setPasswordError("");
+    setPasswordSuccess("");
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setPasswordError("");
+    setPasswordSuccess("");
+  
     if (!passwords.current || !passwords.newPass || !passwords.confirm) {
-      setError("All fields are required");
+      setPasswordError("All fields are required");
       return;
     }
 
     if (passwords.newPass !== passwords.confirm) {
-      setError("New password and confirm password do not match");
+      setPasswordError("New password and confirm password do not match");
       return;
     }
 
-    console.log("Password Change:", passwords);
+    if (passwords.newPass.length < 8) {
+      setPasswordError("Password must be at least 8 characters long");
+      return;
+    }
 
-    // reset & close
-    setPasswords({ current: "", newPass: "", confirm: "" });
-    setError("");
-    setOpenPasswordModal(false);
+    try {
+      setPasswordLoading(true);
+      
+      // Call your password change endpoint
+      await api.patch(`/users/${user.id}/change-password`, {
+        currentPassword: passwords.current,
+        newPassword: passwords.newPass
+      });
+      toast.success("Password updated successfully!");
+      setPasswordSuccess("Password updated successfully!");
+      
+      // Reset form
+      setPasswords({ current: "", newPass: "", confirm: "" });
+      
+      // Close modal after 2 seconds
+      setTimeout(() => {
+        setOpenPasswordModal(false);
+        setPasswordSuccess("");
+      }, 2000);
+      
+    } catch (err) {
+      console.error("Password change error:", err);
+      setPasswordError(err.response?.data?.message || "Failed to update password");
+      toast.error(err.response?.data?.message || "Failed to update password");
+    } finally {
+      setPasswordLoading(false);
+    }
   };
 
-  /* ---------------- UI ---------------- */
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-500">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !user) {
+    return (
+      <div className="max-w-4xl mx-auto h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">{error || "Failed to load profile"}</p>
+          <button
+            onClick={fetchUserData}
+            className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
 
       {/* HEADER */}
-      <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           {/* Avatar */}
           <div className="w-16 h-16 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center text-2xl font-semibold">
-            {user.name.charAt(0).toUpperCase()}
+            {user.name?.charAt(0).toUpperCase() || user.username?.charAt(0).toUpperCase()}
           </div>
 
           <div>
             <h1 className="text-2xl font-semibold text-gray-800">
-              {user.name}
+              {user.name || user.username}
             </h1>
             <p className="text-gray-500 text-sm">
-              Personal account information
+              @{user.username} • Personal account information
             </p>
           </div>
         </div>
-
-        <button className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 text-sm">
-          <FiEdit2 />
-          Edit Profile
-        </button>
-      </div>
 
       {/* DETAILS CARD */}
       <div className="bg-white rounded-2xl p-6 shadow-sm">
@@ -97,7 +172,7 @@ export default function Profile() {
             <FiUser className="text-gray-400 mt-1" />
             <div>
               <p className="text-gray-400">Full Name</p>
-              <p className="font-medium">{user.name}</p>
+              <p className="font-medium">{user.name || "-"}</p>
             </div>
           </div>
 
@@ -113,8 +188,13 @@ export default function Profile() {
             <FiShield className="text-gray-400 mt-1" />
             <div>
               <p className="text-gray-400">Role</p>
-              <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-600 text-xs font-medium">
-                {user.role}
+              <span className={`px-3 py-1 rounded-full bg-blue-100 text-blue-600 text-xs font-medium">
+                ${user.role === 'admin' 
+                  ? 'bg-purple-100 text-purple-600' 
+                  : 'bg-green-100 text-green-600'
+                }`}
+              >
+                {user.role?.charAt(0).toUpperCase() + user.role?.slice(1) || "User"}
               </span>
             </div>
           </div>
@@ -123,7 +203,7 @@ export default function Profile() {
             <FiCalendar className="text-gray-400 mt-1" />
             <div>
               <p className="text-gray-400">Joined On</p>
-              <p className="font-medium">{user.joinedAt}</p>
+              <p className="font-medium">{formatDate(user.created_at)}</p>
             </div>
           </div>
 
@@ -149,18 +229,23 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* PASSWORD MODAL */}
       <Modal isOpen={openPasswordModal} onClose={() => setOpenPasswordModal(false)}>
         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
           <FiLock className="text-gray-500" />
           Change Password
         </h2>
 
-        <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+        <form className="flex flex-col gap-5" onSubmit={handlePasswordSubmit}>
 
-          {error && (
+          {passwordError && (
             <div className="text-sm text-red-500 bg-red-50 border border-red-200 px-3 py-2 rounded-lg">
-              {error}
+              {passwordError}
+            </div>
+          )}
+
+          {passwordSuccess && (
+            <div className="text-sm text-green-500 bg-green-50 border border-green-200 px-3 py-2 rounded-lg">
+              {passwordSuccess}
             </div>
           )}
 
@@ -172,8 +257,10 @@ export default function Profile() {
               type="password"
               name="current"
               value={passwords.current}
-              onChange={handleChange}
-              className="border rounded-lg px-4 py-2 focus:outline-none"
+              onChange={handlePasswordChange}
+              className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={passwordLoading}
+              required
             />
           </div>
 
@@ -185,9 +272,13 @@ export default function Profile() {
               type="password"
               name="newPass"
               value={passwords.newPass}
-              onChange={handleChange}
-              className="border rounded-lg px-4 py-2 focus:outline-none"
+              onChange={handlePasswordChange}
+              className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={passwordLoading}
+              required
+              minLength="8"
             />
+            <p className="text-xs text-gray-400">Minimum 8 characters</p>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -198,25 +289,34 @@ export default function Profile() {
               type="password"
               name="confirm"
               value={passwords.confirm}
-              onChange={handleChange}
-              className="border rounded-lg px-4 py-2 focus:outline-none"
+              onChange={handlePasswordChange}
+              className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={passwordLoading}
+              required
             />
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t">
             <button
               type="button"
-              onClick={() => setOpenPasswordModal(false)}
+              onClick={() => {
+                setOpenPasswordModal(false);
+                setPasswords({ current: "", newPass: "", confirm: "" });
+                setPasswordError("");
+                setPasswordSuccess("");
+              }}
               className="px-5 py-2 rounded-lg border text-gray-600 hover:bg-gray-100"
+              disabled={passwordLoading}
             >
               Cancel
             </button>
 
             <button
               type="submit"
-              className="px-5 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600"
+              className="px-5 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={passwordLoading}
             >
-              Update Password
+              {passwordLoading ? "Updating..." : "Update Password"}
             </button>
           </div>
 

@@ -167,6 +167,7 @@ export default function ProjectDetail() {
         // fetchUsers={fetchProjectDetails}
       />
 
+      <Activity />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { FaEye, FaEyeSlash, FaUserPlus } from "react-icons/fa";
 import { userValidation } from "../utils/userValidation";
 import api from "../api/axios";
@@ -36,10 +37,11 @@ const UserForm = ({ fetchUsers }) => {
       setLoading(true);
       await api.post("/users", form);
       fetchUsers();
+      toast.success("User created successfully!");
       setForm({ username: "", name: "", email: "", password: "", role: "user" });
       setErrors({});
     } catch (err) {
-      alert(err.response?.data?.message || "Error creating user");
+      toast.error(err.response?.data?.message || "Error creating user");
     } finally {
       setLoading(false);
     }

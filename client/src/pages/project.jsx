@@ -169,6 +169,13 @@ export default function Project() {
               </button>
 
               <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toast.error("Delete clicked (not implemented)");
+                  // alert("delete clicked");
+                  // Replace with actual delete logic and error handling
+                }}
+                className="absolute top-4 right-4 text-gray-400 hover:text-red-500"
                 type="submit"
                 className="bg-blue-500 text-white py-2 px-5 rounded-lg hover:bg-blue-600"
               >
