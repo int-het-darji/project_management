@@ -159,6 +159,7 @@ export default function ProjectDetail() {
         </div>
       </div>
 
+      <Activity />
       <UserTable 
         users={project.assigned_users || []} 
         mode="project" 

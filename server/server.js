@@ -18,6 +18,8 @@ app.use(express.urlencoded({ extended: true }))
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use('/api/users', require('./routes/user.routes'));
+app.use('/api/projects', require('./routes/project.route'))
+app.use("/api/projects/activity", require('./routes/activity.route'));
 
 /*HEALTH CHECK */
 app.get("/health", (req, res) => {

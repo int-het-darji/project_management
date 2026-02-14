@@ -14,7 +14,7 @@ export default function Sidebar({ links }) {
       
       {/* TOP */}
       <div>
-        <h1 className="text-2xl font-semibold mb-8">{longDayName}</h1>
+        <h1 className="text-2xl font-semibold mb-8">{longDayName}</h1> 
 
         <nav className="flex flex-col gap-2">
           {links
