@@ -1,11 +1,12 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "../pages/login";
-import Dashboard from "../pages/dashboard";
+import Dashboard from "../pages/admin/dashboard";
 import ProtectedRoute from "./ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
 import AuthLayout from "../layouts/AuthLayout";
 import Users from "../pages/Users";
 import Project from "../pages/project";
+import Logout from "../pages/Logout";
 import ProjectDetail from "../pages/projectDetail";
 import ActivityDetail from "../pages/ActivityDetail";
 import Profile from "../pages/Profile";
@@ -13,10 +14,13 @@ import Profile from "../pages/Profile";
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Public Route */}
-     <Route element={<AuthLayout />}>
-<Route path="/login" element={<Login />} />
-</Route>
+      {/* Public Routes */}
+      <Route element={<AuthLayout />}>
+        <Route path="/" element={<Login />} />
+      </Route>
+
+      {/* Logout Route */}
+      <Route path="/logout" element={<Logout />} />
 
       {/* Protected Admin Routes */}
       <Route
@@ -26,6 +30,9 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       >
+        <Route path="/admin/dashboard" element={<Dashboard />} />
+        <Route path="/users" element={<Users />} />
+        <Route path="/projects" element={<Project />} />
         <Route path="/dashboard" element={<Dashboard />} />
          <Route path="/admin/users" element={<Users />} />
           <Route path="/admin/projects" element={<Project/>} />

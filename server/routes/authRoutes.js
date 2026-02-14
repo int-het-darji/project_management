@@ -4,7 +4,7 @@ const pool = require("../config/db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-
+/* ================= LOGIN ================= */
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -43,7 +43,6 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    
     const token = jwt.sign(
       {
         id: user.id,
@@ -64,6 +63,15 @@ router.post("/login", async (req, res) => {
       message: "Internal server error",
     });
   }
+});
+
+/* ================= LOGOUT ================= */
+router.post("/logout", (req, res) => {
+  // JWT is stateless, so nothing to destroy server-side
+  // This endpoint is kept for consistency and future audit/logging
+  res.status(200).json({
+    message: "Logged out successfully",
+  });
 });
 
 module.exports = router;
