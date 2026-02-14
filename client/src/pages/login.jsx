@@ -51,7 +51,7 @@ const Login = () => {
       if (role === "admin") {
         navigate("/admin/dashboard", { replace: true });
       } else {
-        navigate("/user/dashboard", { replace: true });
+        navigate("/user/profile", { replace: true });
       }
     } catch (err) {
       toast.error(
