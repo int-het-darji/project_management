@@ -6,6 +6,7 @@ import api from "../api/axios";
 const UserForm = ({ fetchUsers }) => {
   const [form, setForm] = useState({
     username: "",
+    name: "",
     email: "",
     password: "",
     role: "user",
@@ -13,9 +14,13 @@ const UserForm = ({ fetchUsers }) => {
 
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: null });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -28,12 +33,15 @@ const UserForm = ({ fetchUsers }) => {
     }
 
     try {
+      setLoading(true);
       await api.post("/users", form);
       fetchUsers();
-      setForm({ username: "", email: "", password: "", role: "user" });
+      setForm({ username: "", name: "", email: "", password: "", role: "user" });
       setErrors({});
     } catch (err) {
       alert(err.response?.data?.message || "Error creating user");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,6 +66,26 @@ const UserForm = ({ fetchUsers }) => {
 
       <div className="space-y-1">
         <label className="text-sm font-medium text-gray-700">
+          Full Name</label>
+        <input
+          type="text"
+          name="name"
+          value={form.name}
+          onChange={handleChange}
+          placeholder="Enter Name"
+          className={`w-full rounded-xl border px-4 py-2 text-sm outline-none transition
+            focus:ring-2 focus:ring-blue-500
+            ${errors.name ? "border-red-500" : "border-gray-300"}
+          `}
+          disabled={loading}
+        />
+        {errors.name && (
+          <p className="text-xs text-red-500">{errors.name}</p>
+        )}
+      </div>
+
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-gray-700">
           Username
         </label>
         <input
@@ -70,6 +98,7 @@ const UserForm = ({ fetchUsers }) => {
             focus:ring-2 focus:ring-blue-500
             ${errors.username ? "border-red-500" : "border-gray-300"}
           `}
+          disabled={loading}
         />
         {errors.username && (
           <p className="text-xs text-red-500">{errors.username}</p>
@@ -90,6 +119,7 @@ const UserForm = ({ fetchUsers }) => {
             focus:ring-2 focus:ring-blue-500
             ${errors.email ? "border-red-500" : "border-gray-300"}
           `}
+          disabled={loading}
         />
         {errors.email && (
           <p className="text-xs text-red-500">{errors.email}</p>
@@ -112,11 +142,13 @@ const UserForm = ({ fetchUsers }) => {
               focus:ring-2 focus:ring-blue-500
               ${errors.password ? "border-red-500" : "border-gray-300"}
             `}
+            disabled={loading}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
+            disabled={loading}
           >
             {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
           </button>
@@ -136,6 +168,7 @@ const UserForm = ({ fetchUsers }) => {
           value={form.role}
           onChange={handleChange}
           className="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+          disabled={loading}
         >
           <option value="user">User</option>
           <option value="admin">Admin</option>
@@ -146,8 +179,9 @@ const UserForm = ({ fetchUsers }) => {
         type="submit"
         className="w-full cursor-pointer rounded-xl bg-blue-600 py-2.5 text-sm font-medium text-white
         hover:bg-blue-700 transition active:scale-[0.98]"
+        disabled={loading}
       >
-        Create User
+        {loading ? "Creating..." : "Create User"}
       </button>
     </form>
   );

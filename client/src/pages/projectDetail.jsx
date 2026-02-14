@@ -159,6 +159,13 @@ export default function ProjectDetail() {
         </div>
       </div>
 
+      <UserTable 
+        users={project.assigned_users || []} 
+        mode="project" 
+        projectId={project.id}
+        // fetchUsers={fetchProjectDetails}
+      />
+
       <Activity />
       <UserTable />
     </div>

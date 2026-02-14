@@ -10,12 +10,16 @@ const Users = () => {
   const [open, setOpen] = useState(false);
 
   const fetchUsers = async () => {
-    const { data } = await api.get("/users");
-    setUsers(data);
+    try {
+      const { data } = await api.get("/users");
+      setUsers(data);
+    } catch (err) {
+      alert(err.response?.data?.message || "Error fetching users");
+    }
   };
 
   useEffect(() => {
-    // fetchUsers();
+    fetchUsers();
   }, []);
 
   return (
@@ -33,7 +37,7 @@ const Users = () => {
         </button>
       </div>
 
-      <UserTable users={users} fetchUsers={fetchUsers} />
+      <UserTable users={users} mode="users" fetchUsers={fetchUsers} />
 
       <Modal isOpen={open} onClose={() => setOpen(false)}>
         <UserForm
