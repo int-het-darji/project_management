@@ -1,8 +1,40 @@
 import { FiTrash2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-// import Modal from "../components/Modal";
+import Modal from "../components/Modal";
+import { useState } from "react";
 
 export default function Project() {
+    
+    const [openModal, setOpenModal] = useState(false);
+
+    const [formData, setFormData] = useState({
+        name: "",
+        desc: "",
+    });
+
+    let role = "admin"
+
+    const handleChange = (e) => {
+  const { name, value } = e.target;
+  setFormData((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
+
+
+const handleSubmit = (e) => {
+  e.preventDefault();
+
+  console.log("Project Data:", formData);
+
+  // close modal after submit
+  setOpenModal(false);
+
+  // reset form
+  setFormData({ name: "", desc: "" });
+};
+
 
     const navigate = useNavigate();
     const projects = [
@@ -48,6 +80,29 @@ export default function Project() {
     <div className="max-w-3xl mx-auto h-screen overflow-x-auto no-scrollbar">
       {/* Page Title */}
 
+
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-800">
+              Projects
+            </h1>
+            <p className="text-gray-500 text-sm">
+              Manage and create your projects
+            </p>
+          </div>
+
+          <button
+            onClick={() => setOpenModal(true)}
+            className="bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600 transition"
+          >
+            + Create Project
+          </button>
+        </div>
+
+
+    <Modal isOpen={openModal} onClose={() => setOpenModal(false)}>
+
+
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-gray-800">
           Create New Project
@@ -59,7 +114,7 @@ export default function Project() {
 
       {/* Card */}
       <div className="bg-white rounded-2xl shadow-sm  p-8">
-        <form className="flex flex-col gap-6">
+        <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
 
           {/* Project Name */}
           <div className="flex flex-col gap-2">
@@ -68,6 +123,9 @@ export default function Project() {
             </label>
             <input
               type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
               placeholder="Enter project name..."
               className="border rounded-lg px-4 py-2 focus:outline-none"
             />
@@ -80,6 +138,9 @@ export default function Project() {
             </label>
             <textarea
               rows="5"
+              name="desc"
+            value={formData.desc}
+            onChange={handleChange}
               placeholder="Write something about the project..."
               className="border rounded-lg px-4 py-2 resize-none focus:outline-none"
             ></textarea>
@@ -105,7 +166,7 @@ export default function Project() {
         </form>
       </div>
 
-
+    </Modal>
       <br /><br />
 
         {/* for project cards */}
@@ -120,7 +181,7 @@ export default function Project() {
             <div
               key={project.id}
               className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition cursor-pointer relative"
-              onClick={() => navigate(`/projects/${project.id}`)}
+              onClick={() => navigate(`/${role}/projects/${project.id}`)}
             >
 
               {/* DELETE BUTTON */}

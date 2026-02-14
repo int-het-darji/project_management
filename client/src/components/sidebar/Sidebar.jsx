@@ -4,7 +4,6 @@ export default function Sidebar({ links }) {
   let date = new Date()
 
   const longDayName = date.toLocaleString('en-US', { weekday: 'long' });
-  console.log(longDayName);
 
   if(!links){
     return
