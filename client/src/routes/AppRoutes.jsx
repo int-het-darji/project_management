@@ -10,19 +10,20 @@ import Logout from "../pages/Logout";
 import ProjectDetail from "../pages/projectDetail";
 import ActivityDetail from "../pages/ActivityDetail";
 import Profile from "../pages/Profile";
+import Progress from "../pages/progress/Progress";
 
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Public Routes */}
+      {/* PUBLIC (Login at /) */}
       <Route element={<AuthLayout />}>
         <Route path="/" element={<Login />} />
       </Route>
 
-      {/* Logout Route */}
+      {/* LOGOUT */}
       <Route path="/logout" element={<Logout />} />
 
-      {/* Protected Admin Routes */}
+      {/* ================= ADMIN ROUTES ================= */}
       <Route
         element={
           <ProtectedRoute role="admin">
@@ -31,32 +32,32 @@ export default function AppRoutes() {
         }
       >
         <Route path="/admin/dashboard" element={<Dashboard />} />
-        <Route path="/users" element={<Users />} />
-        <Route path="/projects" element={<Project />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-         <Route path="/admin/users" element={<Users />} />
-          <Route path="/admin/projects" element={<Project/>} />
-          <Route path="/admin/projects/:id" element={<ProjectDetail />} />
-          <Route path="admin/projects/activity/:id" element={<ActivityDetail />} />
+        <Route path="/admin/users" element={<Users />} />
+        <Route path="/admin/projects" element={<Project />} />
+        <Route path="/admin/projects/:id" element={<ProjectDetail />} />
+        <Route
+          path="/admin/projects/activity/:id"
+          element={<ActivityDetail />}
+        />
+        <Route path="/admin/progress" element={<Progress />} />
       </Route>
 
-
-      {/* for User*/}
-
+      {/* ================= USER ROUTES ================= */}
       <Route
-  element={
-    <ProtectedRoute role="user">
-      <MainLayout />
-    </ProtectedRoute>
-  }
->
-  {/* <Route path="/user/profile" element={<UserDashboard />} /> */}
-  <Route path="/user/my-projects" element={<Project />} />
-  <Route path="/user/projects/:id" element={<ProjectDetail />} />
-  <Route path="/user/profile" element={<Profile />} />
-  <Route path="user/projects/activity/:id" element={<ActivityDetail />} />
-</Route>
-
+        element={
+          <ProtectedRoute role="user">
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/user/my-projects" element={<Project />} />
+        <Route path="/user/projects/:id" element={<ProjectDetail />} />
+        <Route
+          path="/user/projects/activity/:id"
+          element={<ActivityDetail />}
+        />
+        <Route path="/user/profile" element={<Profile />} />
+      </Route>
     </Routes>
   );
 }
