@@ -26,7 +26,7 @@ const UserTable = ({ users }) => {
         },
     ];
 
-    const usersToDisplay = users.length > 0 ? users : dummyUsers;
+    const usersToDisplay = users?.length > 0 ? users : dummyUsers;
 
     const filteredUsers = usersToDisplay.filter((u) =>
         u.username.toLowerCase().includes(search.toLowerCase())
