@@ -2,8 +2,8 @@ import {
   PieChart,
   Pie,
   Cell,
-  ResponsiveContainer,
   Tooltip,
+  ResponsiveContainer,
 } from "recharts";
 
 const COLORS = {
@@ -14,34 +14,36 @@ const COLORS = {
 };
 
 const ActivityStatusChart = ({ data = [] }) => {
+  const chartData = data.map((d) => ({
+    status: d.status,
+    count: Number(d.count),
+  }));
+
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col h-[360px]">
+    <div className="bg-white rounded-xl shadow-sm p-4 h-[360px]">
       <h3 className="text-sm font-semibold text-gray-800 mb-4">
-        Activity Status Distribution
+        Activity Status
       </h3>
 
-      {/* IMPORTANT: height must be fixed */}
-      <div className="flex-1 min-h-0">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={data}
-              dataKey="count"
-              nameKey="status"
-              outerRadius={90}
-              label
-            >
-              {data.map((entry) => (
-                <Cell
-                  key={entry.status}
-                  fill={COLORS[entry.status]}
-                />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={chartData}
+            dataKey="count"
+            nameKey="status"
+            outerRadius={100}
+            label
+          >
+            {chartData.map((e) => (
+              <Cell
+                key={e.status}
+                fill={COLORS[e.status]}
+              />
+            ))}
+          </Pie>
+          <Tooltip />
+        </PieChart>
+      </ResponsiveContainer>
     </div>
   );
 };

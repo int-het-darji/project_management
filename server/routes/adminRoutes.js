@@ -21,5 +21,6 @@ router.get(
   admin,
   adminController.getProgress
 );
+router.get("/progress/export", auth, admin, adminController.exportProgressCSV);
 
 module.exports = router;
