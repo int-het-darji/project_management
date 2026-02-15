@@ -6,7 +6,7 @@ import { userValidation } from "../utils/userValidation";
 import api from "../api/axios";
 import debounce from "lodash/debounce";
 
-const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers }) => {
+const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers, onAssignToggle }) => {
   const [search, setSearch] = useState("");
   const [displayedUsers, setDisplayedUsers] = useState(users);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -100,6 +100,7 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
         setSearch("");
       }
       setOpenMenuId(null);
+      toast.success("User deleted successfully");
         } catch (err) {
             toast.error(err.response?.data?.message || "Error deleting user");
     } finally {
@@ -109,6 +110,11 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
 
   // Frontend assign toggle
   const handleAssignToggle = async (userId) => {
+    if (!projectId) {
+      toast.error("Project ID is missing");
+      return;
+    }
+    
     try {
       setLoading(true);
       
@@ -121,6 +127,10 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
       } else {
         await api.post(`/projects/${projectId}/assign/${userId}`);
         toast.success("User assigned successfully");
+      }
+
+       if (onAssignToggle) {
+        await onAssignToggle();
       }
       
       // Refresh with current search term
@@ -161,11 +171,15 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
       // Refresh users list to get updated data
       if (fetchUsers) {
         await fetchUsers();
+        if (search) {
+          debouncedSearch(search);
+        }
       }
 
       setResetUser(null);
       setNewPassword("");
       setPasswordError("");
+      toast.success("Password reset successfully");
         } catch (err) {
             toast.error(err.response?.data?.message || "Error resetting password");
     } finally {
@@ -185,11 +199,11 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
   };
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm p-6 space-y-6">
+        <div className="p-6 space-y-6 bg-white shadow-sm rounded-2xl">
 
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-blue-100 text-blue-600">
+                    <div className="p-2 text-blue-600 bg-blue-100 rounded-xl">
                         <FaUsers size={20} />
                     </div>
                     <div>
@@ -202,19 +216,19 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                 <div className="relative w-full md:w-72">
                     <FaSearch
                         size={14}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        className="absolute text-gray-400 -translate-y-1/2 left-3 top-1/2"
                     />
                     <input
                         type="text"
                         placeholder="Search users..."
                         value={search}
                         onChange={handleSearchChange}
-                        className="w-full border rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full py-2 pl-10 pr-4 text-sm border outline-none rounded-xl focus:ring-2 focus:ring-blue-500"
                         disabled={loading || searchLoading}
                     />
                     {searchLoading && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="absolute -translate-y-1/2 right-3 top-1/2">
+                            <div className="w-4 h-4 border-2 border-blue-500 rounded-full border-t-transparent animate-spin"></div>
                         </div>
                     )}
                 </div>
@@ -223,15 +237,15 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
             <div className="overflow-x-auto">
                 <table className="w-full text-sm table-fixed">
                     <thead>
-                        <tr className="border-b text-gray-500 bg-gray-50">
-                            <th className="py-3 px-4 text-left font-semibold">Username</th>
-                            <th className="py-3 px-4 text-left font-semibold">Name</th>
-                            <th className="py-3 px-4 text-left font-semibold">Email</th>
-                            <th className="py-3 px-4 text-left font-semibold">Role</th>
+                        <tr className="text-gray-500 border-b bg-gray-50">
+                            <th className="px-4 py-3 font-semibold text-left">Username</th>
+                            <th className="px-4 py-3 font-semibold text-left">Name</th>
+                            <th className="px-4 py-3 font-semibold text-left">Email</th>
+                            <th className="px-4 py-3 font-semibold text-left">Role</th>
                             {mode === "users" && (
-                                <th className="py-3 px-4 text-left font-semibold">Created At</th>
+                                <th className="px-4 py-3 font-semibold text-left">Created At</th>
                             )}
-                            <th className="py-3 px-4 text-right font-semibold w-40">Action</th>
+                            <th className="w-40 px-4 py-3 font-semibold text-right">Action</th>
                         </tr>
                     </thead>
 
@@ -240,7 +254,7 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                             <tr>
                                 <td
                                     colSpan={mode === "users" ? 6 : 5}
-                                    className="text-center py-8 text-gray-400"
+                                    className="py-8 text-center text-gray-400"
                                 >
                                     Loading...
                                 </td>
@@ -250,7 +264,7 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                             <tr>
                                 <td
                                     colSpan={mode === "users" ? 6 : 5}
-                                    className="text-center py-8 text-gray-400"
+                                    className="py-8 text-center text-gray-400"
                                 >
                                     {search ? "No users match your search" : "No users found"}
                                 </td>
@@ -259,21 +273,21 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                             {!loading && !searchLoading && displayedUsers.map((user) => (
                                 <tr
                                     key={user.id}
-                                    className="group border-b hover:bg-gray-50 transition"
+                                    className="transition border-b group hover:bg-gray-50"
                                 >
-                                    <td className="py-4 px-4 font-medium text-gray-800">
+                                    <td className="px-4 py-4 font-medium text-gray-800">
                                         {user.username}
                                     </td>
 
-                                    <td className="py-4 px-4 font-medium text-gray-800">
+                                    <td className="px-4 py-4 font-medium text-gray-800">
                                         {user.name || "-"}
                                     </td>
 
-                                    <td className="py-4 px-4 text-gray-600 truncate">
+                                    <td className="px-4 py-4 text-gray-600 truncate">
                                         {user.email}
                                     </td>
 
-                                    <td className="py-4 px-4">
+                                    <td className="px-4 py-4">
                                         <span
                                             className={`px-3 py-1 rounded-full text-xs font-medium
                                             ${
@@ -288,12 +302,12 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                                     </td>
 
                                     {mode === "users" && (
-                                        <td className="py-4 px-4 text-gray-500">
+                                        <td className="px-4 py-4 text-gray-500">
                                             {formatDate(user.created_at)}
                                         </td>
                                     )}
 
-                                    <td className="py-4 px-4 text-right relative">
+                                    <td className="relative px-4 py-4 text-right">
                                         {mode === "users" && (
                                             <>
                                                 <button
@@ -309,10 +323,10 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                                                 </button>
 
                                                 {openMenuId === user.id && (
-                                                    <div className="absolute right-0 mt-2 w-40 bg-white border shadow-md z-20">
+                                                    <div className="absolute right-0 z-20 w-40 mt-2 bg-white border shadow-md">
                                                         <button
                                                             onClick={() => handleDelete(user.id)}
-                                                            className="flex items-center gap-2 w-full px-4 py-2 text-sm hover:bg-gray-100 text-red-600"
+                                                            className="flex items-center w-full gap-2 px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                                                             disabled={loading || searchLoading}
                                                         >
                                                             <FaTrash size={12} /> Delete
@@ -323,7 +337,7 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                                                                 setResetUser(user);
                                                                 setOpenMenuId(null);
                                                             }}
-                                                            className="flex items-center gap-2 w-full px-4 py-2 text-sm hover:bg-gray-100 text-blue-600"
+                                                            className="flex items-center w-full gap-2 px-4 py-2 text-sm text-blue-600 hover:bg-gray-100"
                                                             disabled={loading || searchLoading}
                                                         >
                                                             <FaKey size={12} /> Reset Password
@@ -341,10 +355,11 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                                                         ? "bg-red-100 text-red-600 hover:bg-red-200"
                                                         : "bg-green-100 text-green-600 hover:bg-green-200"
                                                     }
+                                                    ${loading ? "opacity-50 cursor-not-allowed" : ""}
                                                 `}
                                                 disabled={loading || searchLoading}
                                                 >
-                                                {user.is_assigned ? "Unassign" : "Assign"}
+                                                {loading ? "..." : (user.is_assigned ? "Unassign" : "Assign")}
                                             </button>
                                         )}
                                     </td>
@@ -354,7 +369,7 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                 </table>
             </div>
 
-            <div className="flex justify-between items-center text-sm text-gray-500">
+            <div className="flex items-center justify-between text-sm text-gray-500">
                 <span>Total Users: {displayedUsers.length}</span>
                 {search && (
                     <button
@@ -364,7 +379,7 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                                 fetchUsers();
                             }
                         }}
-                        className="text-blue-600 hover:text-blue-700 text-xs"
+                        className="text-xs text-blue-600 hover:text-blue-700"
                     >
                         Clear search
                     </button>
@@ -372,7 +387,7 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
             </div>
 
             <Modal isOpen={!!resetUser} onClose={() => setResetUser(null)}>
-                <h2 className="text-lg font-semibold mb-4">
+                <h2 className="mb-4 text-lg font-semibold">
                     Reset Password for {resetUser?.username}
                 </h2>
 
@@ -389,12 +404,12 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers })
                     `}
                 />
                 {passwordError && (
-                    <p className="text-sm text-red-500 mb-3">{passwordError}</p>
+                    <p className="mb-3 text-sm text-red-500">{passwordError}</p>
                 )}
 
                 <button
                     onClick={handlePasswordReset}
-                    className="w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition"
+                    className="w-full py-2 text-white transition bg-blue-600 rounded-xl hover:bg-blue-700"
                     disabled={loading || !newPassword}
                 >
                     {loading ? "Updating..." : "Update Password"}
