@@ -7,13 +7,13 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 
-/* ================= VALIDATION ================= */
+
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-/* ================= COMPONENT ================= */
+
 const Login = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -46,7 +46,7 @@ const Login = () => {
       localStorage.setItem("token", token);
       localStorage.setItem("role", role);
 
-      toast.success("Welcome back 👋", { id: toastId });
+      toast.success("Login Successfully", { id: toastId });
 
       if (role === "admin") {
         navigate("/admin/dashboard", { replace: true });
