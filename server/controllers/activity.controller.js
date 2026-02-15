@@ -75,3 +75,25 @@ exports.deleteActivity = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// activity detail
+exports.getActivityById = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+
+    const result = await pool.query(
+      `SELECT a.*, u.name as created_by_name
+       FROM activities a
+       JOIN users u ON u.id = a.created_by
+       WHERE a.id = $1`,
+      [activityId]
+    );
+
+    if (result.rowCount === 0)
+      return res.status(404).json({ message: "Activity not found" });
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};

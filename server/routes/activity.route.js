@@ -6,12 +6,15 @@ const {
   getProjectActivities,
   createActivity,
   updateActivityStatus,
-  deleteActivity
+  deleteActivity,
+  getActivityById
 } = require("../controllers/activity.controller");
 
 router.get("/projects/:id/activities", auth, getProjectActivities);
 router.post("/projects/:id/activities", auth, createActivity);
 router.patch("/:activityId", auth, updateActivityStatus);
 router.delete("/:activityId", auth, deleteActivity);
+router.get("/activities/:activityId", auth, getActivityById);
+
 
 module.exports = router;
