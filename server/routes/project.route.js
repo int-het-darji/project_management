@@ -7,7 +7,10 @@ const {
   createProject,
   deleteProject,
   getProjects,
-  getProjectById
+  getProjectById,
+  assignUserToProject,
+  unassignUserFromProject,
+  getProjectActivities
 } = require("../controllers/project.controller");
 
 
@@ -26,5 +29,9 @@ router.get("/", authMiddleware, getProjects);
 router.post("/", authMiddleware, adminMiddleware, createProject);
 router.delete("/:id", authMiddleware, adminMiddleware, deleteProject);
 router.get("/:id", authMiddleware, getProjectById);
+
+router.post("/:projectId/assign/:userId", authMiddleware, adminMiddleware, assignUserToProject);
+router.delete("/:projectId/assign/:userId", authMiddleware, adminMiddleware, unassignUserFromProject);
+router.get("/:projectId/activities", authMiddleware, getProjectActivities);
 
 module.exports = router;
