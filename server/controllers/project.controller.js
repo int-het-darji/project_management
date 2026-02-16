@@ -53,10 +53,21 @@ exports.deleteProject = async (req, res) => {
   }
 };
 
-// GET ALL PROJECTS
+// GET ALL PROJECTS (for admin) or REDIRECT to user projects (for regular users)
 exports.getProjects = async (req, res) => {
   try {
-    const result = await pool.query(`SELECT * FROM projects ORDER BY id DESC`);
+    // If user is not admin, redirect to getUserProjects
+    if (req.user.role !== 'admin') {
+      return exports.getUserProjects(req, res);
+    }
+
+    // Admin gets all projects
+    const result = await pool.query(`
+      SELECT p.*, u.username as created_by_name
+      FROM projects p
+      JOIN users u ON u.id = p.created_by
+      ORDER BY p.created_at DESC
+    `);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -64,11 +75,78 @@ exports.getProjects = async (req, res) => {
   }
 };
 
+// GET USER'S ASSIGNED PROJECTS (for regular users)
+exports.getUserProjects = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const result = await pool.query(
+      `SELECT p.*, u.username as created_by_name,
+        true as is_assigned
+       FROM projects p
+       JOIN users u ON u.id = p.created_by
+       JOIN project_assign pa ON pa.project_id = p.id
+       WHERE pa.user_id = $1
+       ORDER BY p.created_at DESC`,
+      [userId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching user projects:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// GET USER'S ASSIGNED PROJECTS (for regular users)
+exports.getUserProjects = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const result = await pool.query(
+      `SELECT p.*, u.username as created_by_name,
+        CASE 
+          WHEN pa.user_id IS NOT NULL THEN true 
+          ELSE false 
+        END as is_assigned
+       FROM projects p
+       JOIN users u ON u.id = p.created_by
+       LEFT JOIN project_assign pa ON pa.project_id = p.id AND pa.user_id = $1
+       WHERE pa.user_id IS NOT NULL
+       ORDER BY p.created_at DESC`,
+      [userId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching user projects:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // get signgle project with assigned users
+// get single project with assigned users
 exports.getProjectById = async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user.id;
+    const userRole = req.user.role;
     const { search = '' } = req.query;
+
+    // First, check if user has access to this project
+    if (userRole !== 'admin') {
+      const accessCheck = await pool.query(
+        `SELECT id FROM project_assign 
+         WHERE project_id = $1 AND user_id = $2`,
+        [id, userId]
+      );
+
+      if (accessCheck.rowCount === 0) {
+        return res.status(403).json({ 
+          message: "You don't have access to this project" 
+        });
+      }
+    }
 
     const projectResult = await pool.query(
       `SELECT p.*, u.username as created_by_name
@@ -83,36 +161,45 @@ exports.getProjectById = async (req, res) => {
 
     const project = projectResult.rows[0];
 
-    // Get all users with assignment status
-    let usersQuery = `
-      SELECT 
-        u.id,
-        u.username,
-        u.name,
-        u.email,
-        u.role,
-        CASE WHEN pa.user_id IS NOT NULL THEN true ELSE false END as is_assigned
-      FROM users u
-      LEFT JOIN project_assign pa ON pa.user_id = u.id AND pa.project_id = $1
-    `;
-
-    const queryParams = [id];
-    
-    // Add search if provided
-    if (search) {
-      usersQuery += `
-        WHERE 
-          u.username ILIKE $2 OR 
-          u.name ILIKE $2 OR 
-          u.email ILIKE $2
+    // Get all users with assignment status (only for admin)
+    if (userRole === 'admin') {
+      let usersQuery = `
+        SELECT 
+          u.id,
+          u.username,
+          u.name,
+          u.email,
+          u.role,
+          CASE WHEN pa.user_id IS NOT NULL THEN true ELSE false END as is_assigned
+        FROM users u
+        LEFT JOIN project_assign pa ON pa.user_id = u.id AND pa.project_id = $1
       `;
-      queryParams.push(`%${search}%`);
+
+      const queryParams = [id];
+      
+      // Add search if provided
+      if (search) {
+        usersQuery += `
+          WHERE 
+            u.username ILIKE $2 OR 
+            u.name ILIKE $2 OR 
+            u.email ILIKE $2
+        `;
+        queryParams.push(`%${search}%`);
+      }
+      
+      usersQuery += ` ORDER BY u.created_at DESC`;
+      
+      const usersResult = await pool.query(usersQuery, queryParams);
+      project.assigned_users = usersResult.rows;
+    } else {
+      // For regular users, just show that they're assigned
+      project.assigned_users = [{
+        id: userId,
+        is_assigned: true,
+        message: "You are assigned to this project"
+      }];
     }
-    
-    usersQuery += ` ORDER BY u.created_at DESC`;
-    
-    const usersResult = await pool.query(usersQuery, queryParams);
-    project.assigned_users = usersResult.rows;
 
     res.json(project);
   } catch (err) {

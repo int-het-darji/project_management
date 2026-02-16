@@ -273,7 +273,7 @@ const UserTable = ({ users = [], mode = "users", projectId = null, fetchUsers, o
                             {!loading && !searchLoading && displayedUsers.map((user) => (
                                 <tr
                                     key={user.id}
-                                    className="transition border-b group hover:bg-gray-50"
+                                    className="transition border-b border-gray-100 group hover:bg-gray-50"
                                 >
                                     <td className="px-4 py-4 font-medium text-gray-800">
                                         {user.username}
