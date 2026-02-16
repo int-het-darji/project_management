@@ -37,6 +37,7 @@ export default function ProjectDetail() {
     }
   }, [id]);
 
+  
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {

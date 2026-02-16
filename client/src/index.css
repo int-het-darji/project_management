@@ -22,6 +22,14 @@ body {
   }
 }
 
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: theme('colors.gray.300');
+  }
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

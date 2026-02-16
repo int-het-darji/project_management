@@ -6,6 +6,7 @@ import {
   FiClipboard,
   FiUser,
 } from "react-icons/fi";
+import { RiDashboardFill } from "react-icons/ri";
 
 /* USER MENU */
 export const userMenu = [
@@ -16,6 +17,7 @@ export const userMenu = [
 
 /* ADMIN MENU */
 export const adminMenu = [
+  { label: "Dashboard", to: "/admin/dashboard", icon: RiDashboardFill },
   { label: "Users", to: "/admin/users", icon: FiUsers },
   { label: "Projects", to: "/admin/projects", icon: FiFolder },
   { label: "Progress", to: "/admin/progress", icon: FiBarChart2 },
