@@ -16,8 +16,10 @@ export default function Project() {
 
   const [projects, setProjects] = useState([]);
 
+
   const navigate = useNavigate();
   const role = localStorage.getItem('role')
+
   const token = localStorage.getItem("token");
   // ================= FETCH PROJECTS =================
   const fetchProjects = async () => {
@@ -123,12 +125,14 @@ export default function Project() {
           </p>
         </div>
 
-        <button
-          onClick={() => setOpenModal(true)}
-          className="bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600 transition"
-        >
-          + Create Project
-        </button>
+       {role === "admin" && (
+  <button
+    onClick={() => setOpenModal(true)}
+    className="bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600 transition"
+  >
+    + Create Project
+  </button>
+)}
       </div>
 
       <Modal isOpen={openModal} onClose={() => setOpenModal(false)}>
