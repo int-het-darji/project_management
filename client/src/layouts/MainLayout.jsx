@@ -5,8 +5,10 @@ import { adminMenu, userMenu } from "../conifg/menu.config";
 export default function MainLayout() {
 
   // simulate login user
-  const user = { role: "admin" };
-  const links = user.role === "admin" ? adminMenu : userMenu;
+  // const user = { role: "admin" };
+  const user = localStorage.getItem('role')
+  const links = user == "admin" ? adminMenu : userMenu;
+  console.log(user)
 
   return (
     <div className="flex h-screen overflow-hidden">

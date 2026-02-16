@@ -1,43 +1,62 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Modal from "../components/Modal";
 import { FiMessageCircle } from "react-icons/fi";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 export default function ActivityComments() {
+
   const { id } = useParams();
   const [openModal, setOpenModal] = useState(false);
 
   const [commentText, setCommentText] = useState("");
+  const token = localStorage.getItem("token");
+  const [comments, setComments] = useState([]);
 
-  // 🔹 Dummy comments (simulate DB response)
-  const dummyComments = [
-    {
-      id: "c1",
-      user: "Het",
-      message: "Initial database schema created.",
-      createdAt: "2026-02-10T10:00:00Z",
-    },
-    {
-      id: "c2",
-      user: "Dev",
-      message: "Added activity timeline structure.",
-      createdAt: "2026-02-11T13:20:00Z",
-    },
-    {
-      id: "c3",
-      user: "Het",
-      message: "Working on UI cards now.",
-      createdAt: "2026-02-12T09:45:00Z",
-    },
-  ];
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("New Comment:", commentText);
+  const fetchComments = async () => {
+  try {
+    const res = await axios.get(
+      `http://localhost:5000/api/activities/${id}/comments`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setComments(res.data);
+  } catch {
+    toast.error("Failed to load comments");
+  }
+};
+
+useEffect(() => {
+  fetchComments();
+}, [id]);
+
+ 
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!commentText.trim())
+    return toast.error("Comment cannot be empty");
+
+  try {
+    await axios.post(
+      `http://localhost:5000/api/activities/${id}/comments`,
+      { message: commentText },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    toast.success("Comment added");
 
     setCommentText("");
     setOpenModal(false);
-  };
+    fetchComments();
+
+  } catch (err) {
+    toast.error(err.response?.data?.message || "Failed to add comment");
+  }
+};
+
 
   return (
     <div className="space-y-6">
@@ -65,24 +84,23 @@ export default function ActivityComments() {
       {/* COMMENTS LIST */}
       <div className="bg-white rounded-2xl shadow divide-y mb-20">
 
-        {dummyComments.map((comment) => (
-          <div key={comment.id} className="p-5 flex justify-between items-start">
+        {comments.map((comment) => (
+  <div key={comment.id} className="p-5 flex justify-between items-start">
 
-            {/* LEFT MESSAGE */}
-            <div className="max-w-[80%]">
-              <p className="text-gray-700">{comment.message}</p>
-              <p className="text-xs text-gray-400 mt-2">
-                {new Date(comment.createdAt).toLocaleString()}
-              </p>
-            </div>
+    <div className="max-w-[80%]">
+      <p className="text-gray-700">{comment.message}</p>
+      <p className="text-xs text-gray-400 mt-2">
+        {new Date(comment.created_at).toLocaleString()}
+      </p>
+    </div>
 
-            {/* RIGHT USER */}
-            <div className="text-sm text-gray-500 whitespace-nowrap">
-              by <span className="font-medium text-gray-700">{comment.user}</span>
-            </div>
+    <div className="text-sm text-gray-500 whitespace-nowrap">
+      by <span className="font-medium text-gray-700">{comment.user_name}</span>
+    </div>
 
-          </div>
-        ))}
+  </div>
+))}
+
 
       </div>
 

@@ -20,6 +20,7 @@ app.use("/api/admin", require("./routes/adminRoutes"));
 app.use('/api/users', require('./routes/user.routes'));
 app.use('/api/projects', require('./routes/project.route'))
 app.use("/api", require('./routes/activity.route'));
+app.use("/api", require("./routes/comment.route"));
 
 /*HEALTH CHECK */
 app.get("/health", (req, res) => {

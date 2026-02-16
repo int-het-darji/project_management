@@ -97,3 +97,47 @@ exports.getActivityById = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+// allowed workflow order
+const flow = ["todo", "in_progress", "review", "done"];
+
+exports.updateActivityStatus = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    const { status } = req.body;
+
+    // get current status
+    const current = await pool.query(
+      `SELECT status FROM activities WHERE id=$1`,
+      [activityId]
+    );
+
+    if (current.rowCount === 0)
+      return res.status(404).json({ message: "Activity not found" });
+
+    const currentStatus = current.rows[0].status;
+
+    // check forward only
+    const currentIndex = flow.indexOf(currentStatus);
+    const nextIndex = flow.indexOf(status);
+
+    if (nextIndex === -1)
+      return res.status(400).json({ message: "Invalid status" });
+
+    if (nextIndex <= currentIndex)
+      return res.status(400).json({
+        message: `Cannot move activity backward (${currentStatus} → ${status})`,
+      });
+
+    const result = await pool.query(
+      `UPDATE activities SET status=$1 WHERE id=$2 RETURNING *`,
+      [status, activityId]
+    );
+
+    res.json(result.rows[0]);
+
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
